@@ -2,7 +2,7 @@ DROP TABLE GRUPA CASCADE CONSTRAINTS;
 DROP TABLE STUDENTI CASCADE CONSTRAINTS;
 DROP TABLE CURSURI CASCADE CONSTRAINTS;
 DROP TABLE ORAR CASCADE CONSTRAINTS;
-DROP TABLE TEST CASCADE CONSTRAINTS;
+DROP TABLE TAXE CASCADE CONSTRAINTS;
 prompt
 prompt Creating table GRUPA
 prompt ======================
@@ -16,12 +16,14 @@ create table GRUPA
 ;
 alter table GRUPA
   add constraint FACULTATE_NN
-  check ("FACULTATE" IS NOT NULL); 
+  check ("FACULTATE" IS NOT NULL)
+  add sef_grupa VARCHAR(120); 
 
 prompt
 prompt Creating table STUDENTI
 prompt ======================
 prompt
+
 create table STUDENTI
 (
   id_student VARCHAR2(25) constraint pk_s_studenti primary key,
@@ -34,15 +36,15 @@ create table STUDENTI
 )
 ;
 
+
 alter table STUDENTI
   add constraint ID_STUDENT_NN
-  check ("ID_STUDENT" IS NOT NULL);
-alter table STUDENTI
+  check ("ID_STUDENT" IS NOT NULL)
+  add constraint PRENUME_NN
+  check ("PRENUME" IS NOT NULL)
   add constraint NUME_NN
   check ("NUME" IS NOT NULL);
-alter table STUDENTI
-  add constraint PRENUME_NN
-  check ("PRENUME" IS NOT NULL);
+
   
    
   
@@ -59,13 +61,13 @@ create table CURSURI
  data_incepere DATE,
  salariul number,
  comision number,
+ nr_studenti_inscrisi number,
  constraint fk_cursuri foreign key (id_grupa) references GRUPA(id_grupa)
 )
 ;
 
 alter table CURSURI
-  add constraint ID_CURS_NN
-  check ("ID_CURS" IS NOT NULL); 
+  drop column nr_studenti_inscrisi;
   
 prompt
 prompt Creating table ORAR
@@ -79,19 +81,36 @@ create table ORAR
   constraint fk_orar foreign key (id_curs) references CURSURI(id_curs)
 )
 ;
+prompt
+prompt Creating table TAXE
+prompt ======================
+prompt
 
+create table TAXE
+(
+    denumire_taxa VARCHAR(120) constraint pk_t_taxa primary key,
+    valoare_taxa number,
+    id_student VARCHAR2(25),
+    constraint fk_taxe foreign key (id_student) references STUDENTI(id_student)
+);
 
 prompt 5 exemple insert
-insert into GRUPA(id_grupa,facultate, specialitate)
-values(1043,'ASE','CSIE');
+insert into GRUPA(id_grupa,facultate, specialitate, sef_grupa)
+values(1043,'ASE','CSIE', 'Popescu Ionel');
 
-insert into GRUPA(id_grupa,facultate, specialitate)
-values(1047,'ASE','CSIE');
+insert into GRUPA(id_grupa,facultate, specialitate, sef_grupa)
+values(1047,'ASE','CSIE', 'Antonio Alexandru');
 
-INSERT INTO STUDENTI (id_student, nume, prenume, an_nastere, cnp, id_grupa) VALUES ('2131', 'Popescu','Ionel',2001,6582568267921, 1043);
+insert into GRUPA(id_grupa,facultate, specialitate, sef_grupa)
+values(1046,'ASE','CSIE', 'Stanciu Violeta');
+
+INSERT INTO STUDENTI (id_student, nume, prenume, an_nastere, cnp, id_grupa) VALUES ('2131', 'Popescu','Ionel',2002,6582568267921, 1043);
 SELECT * FROM STUDENTI;
 
-INSERT INTO STUDENTI (id_student, nume, prenume, an_nastere, cnp, id_grupa) VALUES ('345', 'Antonio','Alexandru',2001,582926267914, 1047);
+INSERT INTO STUDENTI (id_student, nume, prenume, an_nastere, cnp, id_grupa) VALUES ('345', 'Antonio','Alexandru',2003,5821926267914, 1047);
+SELECT * FROM STUDENTI;
+
+INSERT INTO STUDENTI (id_student, nume, prenume, an_nastere, cnp, id_grupa) VALUES ('456', 'Stanciu','Violeta',2001,4821967867412, 1046);
 SELECT * FROM STUDENTI;
 
 INSERT INTO STUDENTI  (id_student, nume, prenume, an_nastere, cnp, id_grupa)
@@ -100,12 +119,12 @@ VALUES ('&id_student','&nume','&prenume', '&an_nastere','&cnp', '&id_grupa');
 prompt 2 exemple update 
 
 UPDATE STUDENTI
-SET id_grupa=id_grupa+10
-WHERE an_nastere>2001;
+SET id_student=id_student+100
+WHERE an_nastere<2002;
 SELECT * FROM Studenti;
 
 UPDATE STUDENTI
-SET id_grupa=(SELECT id_grupa FROM STUDENTI WHERE id_student=2131)
+SET id_grupa=(SELECT id_grupa FROM STUDENTI WHERE id_student=345)
 WHERE an_nastere=2002;
 SELECT * FROM Studenti;
 
@@ -118,34 +137,38 @@ DELETE FROM STUDENTI;
 SELECT * FROM STUDENTI;
 
 prompt Loading Grupa
-insert into GRUPA(id_grupa,facultate, specialitate)
-values(1023,'ASE','CSIE');
-insert into GRUPA(id_grupa,facultate, specialitate)
-values(1028,'ASE','CSIE');
-insert into GRUPA(id_grupa,facultate, specialitate)
-values(1072,'ASE','CSIE');
-insert into GRUPA(id_grupa,facultate, specialitate)
-values(1048,'ASE','CSIE');
-insert into GRUPA(id_grupa,facultate, specialitate)
-values(1077,'ASE','CSIE');
+insert into GRUPA(id_grupa,facultate, specialitate, sef_grupa)
+values(1023,'ASE','CSIE','Lupu Bianca');
+insert into GRUPA(id_grupa,facultate, specialitate, sef_grupa)
+values(1028,'ASE','CSIE','Teaca Lucian');
+insert into GRUPA(id_grupa,facultate, specialitate, sef_grupa)
+values(1072,'ASE','CSIE','Valentin Gabriel');
+insert into GRUPA(id_grupa,facultate, specialitate, sef_grupa)
+values(1048,'ASE','CSIE','Militaru Marius');
+insert into GRUPA(id_grupa,facultate, specialitate, sef_grupa)
+values(1077,'ASE','CSIE','Anghel Nicoleta');
 commit;
 prompt 5 records loaded
 
 prompt  Loading Cursuri...
 insert into CURSURI(id_curs,nume_curs, profesor,id_grupa,data_incepere,salariul,comision)
-values('POO','Programare Orientata Obiect', 'Alin Zamfiroiu',1043,to_date('2021-09-27', 'yyyy-mm-dd'),24000,null);
+values('POO','Programare Orientata Obiect', 'Alin Zamfiroiu',1043,to_date('2021-02-25', 'yyyy-mm-dd'),24000,null);
 insert into CURSURI(id_curs,nume_curs, profesor,id_grupa,data_incepere,salariul,comision)
 values('BDD','Baze de date', 'Stefan Preda',1047,to_date('2021-12-23', 'yyyy-mm-dd'), 17000,null);
 insert into CURSURI(id_curs,nume_curs, profesor,id_grupa,data_incepere,salariul,comision)
-values('PSM','Probabilitati si statistica matematica', 'Liana Manu Iosifescu',1023,to_date('2022-02-25', 'yyyy-mm-dd'), 17000,null);
+values('PSM','Probabilitati si statistica matematica', 'Liana Manu Iosifescu',1048,to_date('2021-02-25', 'yyyy-mm-dd'), 17000,null);
 insert into CURSURI(id_curs,nume_curs, profesor,id_grupa,data_incepere,salariul,comision)
-values('SM','Statistica macroeconomica', ' Simona Andreea Apostu',1028,to_date('2022-04-15', 'yyyy-mm-dd'), 9000,null);
+values('SM','Statistica macroeconomica', ' Simona Andreea Apostu',1043,to_date('2022-04-15', 'yyyy-mm-dd'), 9000,null);
 insert into CURSURI(id_curs,nume_curs, profesor,id_grupa,data_incepere,salariul,comision)
-values('FIN','Finante', ' Stefan Cristian Gherghina',1072,to_date('2021-11-12', 'yyyy-mm-dd'), 11000,null);
+values('FIN','Finante', ' Stefan Cristian Gherghina',1047,to_date('2021-11-12', 'yyyy-mm-dd'), 11000,null);
 insert into CURSURI(id_curs,nume_curs, profesor,id_grupa,data_incepere,salariul,comision)
 values('MAN','Managemant', 'Ovidiu Andrei Cristian Buzoianu',1043,to_date('2021-10-19', 'yyyy-mm-dd'), 14000,null);
 insert into CURSURI(id_curs,nume_curs, profesor,id_grupa,data_incepere,salariul,comision)
-values('EFS','Educatie fizica si sport', 'Dumitru Vasilescu',1048,to_date('2022-06-12', 'yyyy-mm-dd'), 13000,null);
+values('EFS','Educatie fizica si sport', 'Dumitru Vasilescu',1047,to_date('2022-06-12', 'yyyy-mm-dd'), 13000,null);
+insert into CURSURI(id_curs,nume_curs, profesor,id_grupa,data_incepere,salariul,comision)
+values('MC','Microeconomie cantitativa', 'ALDEA ANA-MARIA',1048,to_date('2022-06-12', 'yyyy-mm-dd'), 13000,null);
+insert into CURSURI(id_curs,nume_curs, profesor,id_grupa,data_incepere,salariul,comision)
+values('PW','Programare WEB', 'Alin Zamfiroiu',1072,to_date('2021-02-25', 'yyyy-mm-dd'),24000,null);
 commit;
 prompt 7 records loaded
 
@@ -167,6 +190,20 @@ values ('7253', 'Popa','Dorin',2000,5782352346921, 1048);
 commit;
 prompt 7 records loaded
 
+prompt Loading Taxe
+
+insert into TAXE(denumire_taxa, valoare_taxa, id_student)
+values('Taxa Scolarizare IF', 2000, 2135);
+insert into TAXE(denumire_taxa, valoare_taxa, id_student)
+values('Restanta Aaliza', 75, 2135);
+insert into TAXE(denumire_taxa, valoare_taxa, id_student)
+values('Restanta BDD', 2000, 2345);
+insert into TAXE(denumire_taxa, valoare_taxa, id_student)
+values('Restabta POO', 75, 349);
+insert into TAXE(denumire_taxa, valoare_taxa, id_student)
+values('Restanta SM', 7, 1727);
+insert into TAXE(denumire_taxa, valoare_taxa, id_student)
+values('Restanta MAN', 2000, 8387);
 
 
 prompt Loading Orar...
@@ -189,7 +226,7 @@ prompt 1 exemplu merge
 MERGE INTO STUDENTI USING GRUPA
 ON (STUDENTI.id_GRUPA = GRUPA.id_grupa)
 WHEN MATCHED THEN 
-UPDATE SET STUDENTI.id_student=STUDENTi.id_student+2;
+UPDATE SET STUDENTI.id_student=STUDENTI.id_student+2;
 
 prompt 1 exemplu ANY
 
@@ -197,8 +234,8 @@ SELECT id_student, prenume, id_grupa
 FROM STUDENTI
 WHERE an_nastere < ANY
  (SELECT an_nastere FROM STUDENTI
-WHERE id_grupa = '1023') 
-AND id_grupa <> '1023'
+WHERE id_grupa = '1043') 
+AND id_grupa <> '1043'
 ORDER BY an_nastere DESC; 
 
 prompt 1 exemplu ALL
@@ -235,17 +272,21 @@ WHERE id_grupa=1043;
 
 prompt 1 exemplu concatenare
 
-SELECT 'Studentul: ' || INITCAP(nume)|| ' face parte din grupa ' || id_grupa
+SELECT 'Studentul: ' || INITCAP(nume)|| ' face parte din grupa ' || id_grupa Grupa
 FROM STUDENTI;
 
 prompt 1 exemplu SUBSTR
 
-SELECT SUBSTR(nume, 1, 5) AS Nume
+SELECT SUBSTR(nume, 1, 8) AS Nume
 FROM STUDENTI;
 
 prompt 1 exemplu SYSDATE
 
 SELECT SYSDATE data_curenta FROM DUAL;
+
+SELECT nume_curs, ROUND((SYSDATE-data_incepere)/7) saptamani
+FROM CURSURI;
+
 
 prompt 1 exemplu MONTHS_BETWEEN + ADD_MONTHS + NEXT_DAY + LAST_DAY
 
@@ -259,7 +300,7 @@ FROM CURSURI;
 prompt 1 exemplu TO_NUMBER
 
 TO_NUMBER(char[, 'format_model'])
-SELECT TO_NUMBER('RON12.345,64', 'L99G999D99') FROM DUAL;
+SELECT TO_NUMBER('RON12.345,64', 'L99G999D99') FROM CURSURI;
    ALTER SESSION SET NLS_CURRENCY = 'RON';
    CREATE TABLE test(NUMAR VARCHAR2(50));
    INSERT INTO test SELECT salariul FROM CURSURI;
@@ -270,19 +311,108 @@ SELECT TO_NUMBER('RON12.345,64', 'L99G999D99') FROM DUAL;
 
 prompt 1 exemplu NVL-salariul anual
 
-SELECT profesor, salariul*12 + salariul*12*NVL(comision,0) venit_anual
-FROM CURSURI;
+SELECT profesor, salariul*12+ salariul*12*NVL(comision,0) venit_anual
+FROM CURSURI
+GROUP BY profesor, salariul, comision;
+
+
+SELECT profesor, NVL2(comision, 1, 0)
+FROM CURSURI
+GROUP BY profesor, comision;
+
+prompt 1 exemplu intersect
+
+SELECT s.nume, s.prenume, SUM(t.valoare_taxa) total_taxe, COUNT(t.id_student) numar_taxe
+FROM studenti s, taxe t
+WHERE t.id_student=s.id_student
+GROUP BY s.nume, s.prenume
+HAVING COUNT(t.id_student)>0
+INTERSECT
+SELECT s.nume, s.prenume, SUM(t.valoare_taxa) total_taxe, COUNT(t.id_student) numar_taxe
+FROM studenti s, taxe t
+WHERE t.id_student=s.id_student
+GROUP BY s.nume, s.prenume
+HAVING SUM(t.valoare_taxa) NOT IN (7,75);
+
+prompt exemplu subecerere simpla 
+
+SELECT profesor, salariul, id_grupa
+FROM CURSURI
+WHERE id_grupa=(SELECT id_grupa FROM CURSURI  WHERE profesor='Ovidiu Andrei Cristian Buzoianu');
+
+prompt exepmlu subcerere corelata 
+
+SELECT profesor, salariul, nume_curs
+FROM CURSURI 
+WHERE salariul > (SELECT avg(salariul) FROM CURSURI )
+GROUP BY profesor, nume_curs, salariul;
 
 prompt 1 exemplu COUNT- nr de studenti
 
 SELECT COUNT(id_student) nr_studenti
 FROM STUDENTI
 
-prompt 1 exemplu SUM-total salarii pe o luna
+prompt 1 exemplu SUM-total salarii pe luna 
 
-SELECT SUM(salariul * COUNT (id_curs)) total_salarii
+SELECT SUM(SALARIUL) as Salarii, to_char(data_incepere, 'yyyy-mm-dd') as Data_incepere
 FROM CURSURI
-GROUP BY CURSURI.salariul
+GROUP BY data_incepere;
+
+prompt 1 exemplu SUM, MAX, MIN, AVG
+
+SELECT AVG(salariul), MAX(salariul), MIN(salariul), SUM(salariul)
+FROM CURSURI
+WHERE id_grupa='1043';
+
+prompt 1 exemplu salariu med pe fiecare grupa grupat dupa sal mediu 
+
+SELECT id_grupa, SUM(salariul)
+FROM CURSURI
+GROUP BY id_grupa
+
+prompt exemplu Salariul total pe fiecare grupa, fara a lua in calcul cursul de Microeconomie Cantitativa, excluzand grupele cu suma salariilor sub 30000 lei cu ordonare dupa salariu.
+
+SELECT id_grupa, SUM(salariul)
+FROM CURSURI
+WHERE nume_curs!='Microeconomie cantitativa'
+GROUP BY id_grupa
+HAVING SUM(salariul) > 30000
+ORDER BY SUM(salariul)
+
+prompt expemplu extract 
+
+SELECT EXTRACT ( year FROM data_incepere) year, EXTRACT ( month FROM data_incepere) month, nume_curs
+FROM CURSURI;
+
+prompt exemplu union 
+
+SELECT PROFESOR, COUNT(id_curs) numar_cursuri,
+0.1* sum(salariul) valoare_comision
+FROM CURSURI
+GROUP BY profesor, salariul
+HAVING COUNT(id_curs)=1
+UNION 
+SELECT profesor, COUNT(id_curs) numar_cursuri, 
+0.2* SUM(salariul) valoare_comision
+FROM CURSURI
+GROUP BY profesor, salariul
+HAVING COUNT(id_curs)=2
+UNION 
+SELECT profesor, COUNT(id_curs) numar_cursuri, 
+0.3* SUM(salariul) valoare_comision
+FROM CURSURI
+GROUP BY profesor, salariul
+HAVING COUNT(id_curs)>=3;
+
+
+prompt 1 exemplu decode
+
+SELECT nume, prenume, an_nastere, id_grupa
+FROM STUDENTI;
+UPDATE STUDENTI
+SET an_nastere = DECODE(id_grupa, '1043', '2004', an_nastere);
+SELECT nume, prenume, an_nastere, id_grupa
+FROM STUDENTI;
 
 prompt 1 exemplu MAX + MIN - data primul curs + ultimul
 
@@ -291,8 +421,17 @@ SELECT MIN(data_incepere), MAX(data_incepere) FROM CURSURI
 prompt 1 exemplu TOP-DOWN
 
 SELECT id_student, nume, an_nastere, level FROM  STUDENTI
-WHERE id_grupa IN (1043, 1047)
+WHERE id_grupa IN (1043, 1047, 1023)
 CONNECT BY PRIOR id_student = an_nastere
+
+prompt 1 exemplu bottom-up
+
+
+SELECT SYS_CONNECT_BY_PATH(nume, '/') "Path"
+FROM STUDENTI
+START WITH nume = 'Popescu'
+CONNECT BY PRIOR id_grupa = id_student;
+
 
 prompt 1 exemplu CASE
 prompt comision 0.1% POO
@@ -311,6 +450,12 @@ prompt 1 exemplu  MINUS
 SELECT * FROM CURSURI WHERE salariul BETWEEN 13000 AND 24000
 MINUS
 SELECT * FROM CURSURI WHERE salariul IN (17000, 11000);
+
+prompt 1 exemplu  LIKE, IS NOT NULL, AND, !=
+
+SELECT * FROM STUDENTI WHERE nume LIKE 'C%' AND an_nastere != 2001 AND ID_GRUPA IS NOT NULL
+ORDER BY id_student DESC;
+
 
 prompt 2 exemple VIEW 
 
@@ -342,9 +487,13 @@ START WITH 500 INCREMENT BY 10
 MAXVALUE 1000 NOCYCLE;
 
 INSERT INTO total_studenti VALUES (seq_id_student.NEXTVAL, 'Caloian', 'Cosmin', 2001, '5013636373324', 1043);
-SELECT seq_id_student.CURRVAL FROM DUAL;
+SELECT seq_id_student.CURRVAL FROM STUDENTI;
 
+prompt 1 exemplu sinonim 
 
+CREATE SYNONYM o FOR ORAR;
+SELECT * FROM USER_SYNONYMS;
+DROP SYNONYM o;
 
   
   
